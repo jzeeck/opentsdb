@@ -21,12 +21,12 @@ import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 
 import net.opentsdb.core.TSDB;
+import net.opentsdb.storage.HBaseClient;
 import net.opentsdb.utils.Config;
 
 import org.hbase.async.AtomicIncrementRequest;
 import org.hbase.async.Bytes;
 import org.hbase.async.GetRequest;
-import org.hbase.async.HBaseClient;
 import org.hbase.async.HBaseException;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
@@ -895,7 +895,7 @@ public final class TestUniqueId {
   // ----------------- //
 
   private static byte[] emptyArray() {
-    return eq(HBaseClient.EMPTY_ARRAY);
+    return eq(org.hbase.async.HBaseClient.EMPTY_ARRAY);
   }
 
   private static GetRequest anyGet() {
