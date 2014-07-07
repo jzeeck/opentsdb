@@ -110,6 +110,13 @@ public final class HBaseClient implements Client{
     }
 
     @Override
+    public void atomicIncrement(byte[] table, byte[] maxidRow, byte[] idFamily, byte[] bytes, long diff) {
+        final AtomicIncrementRequest air = new AtomicIncrementRequest(table,
+                maxidRow, idFamily, bytes, diff);
+        this.client.atomicIncrement(air);
+    }
+
+    @Override
     public void setFlushInterval(short aShort) {
         this.client.setFlushInterval(aShort);
     }
@@ -123,4 +130,5 @@ public final class HBaseClient implements Client{
     public Deferred<Long> atomicIncrement(AtomicIncrementRequest air) {
         return this.client.atomicIncrement(air);
     }
+
 }

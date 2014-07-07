@@ -805,9 +805,7 @@ final class UidManager {
             LOG.error("Ran out of UIDs for " + kind + ". Unable to fix max ID");
           } else {
             final long diff = uids.max_found_id - uids.maxid;
-            final AtomicIncrementRequest air = new AtomicIncrementRequest(table, 
-                MAXID_ROW, ID_FAMILY, toBytes(kind), diff);
-            client.atomicIncrement(air);
+            client.atomicIncrement(table, MAXID_ROW, ID_FAMILY, toBytes(kind), diff);
             LOG.info("FIX: Updated max ID for " + kind + " to " + uids.max_found_id);
           }          
         }
