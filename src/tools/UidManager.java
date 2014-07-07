@@ -174,8 +174,7 @@ final class UidManager {
       .getBytes();
     
     final TSDB tsdb = new TSDB(config);
-    tsdb.getClient().ensureTableExists(
-        config.getString("tsd.storage.hbase.uid_table")).joinUninterruptibly();
+    tsdb.checkNecessaryTablesExist().joinUninterruptibly();
     argp = null;
     int rc;
     try {
@@ -238,9 +237,7 @@ final class UidManager {
       // check for the data table existence and initialize our plugins 
       // so that update meta data can be pushed to search engines
       try {
-        tsdb.getClient().ensureTableExists(
-            tsdb.getConfig().getString(
-                "tsd.storage.hbase.data_table")).joinUninterruptibly();
+        tsdb.checkNecessaryTablesExist();
         tsdb.initializePlugins(false);
         return metaSync(tsdb);
       } catch (Exception e) {
@@ -251,9 +248,7 @@ final class UidManager {
       // check for the data table existence and initialize our plugins 
       // so that update meta data can be pushed to search engines
       try {
-        tsdb.getClient().ensureTableExists(
-            tsdb.getConfig().getString(
-                "tsd.storage.hbase.uid_table")).joinUninterruptibly();
+        tsdb.checkNecessaryTablesExist();
         return metaPurge(tsdb);
       } catch (Exception e) {
         LOG.error("Unexpected exception", e);
@@ -262,9 +257,7 @@ final class UidManager {
     } else if (args[0].equals("treesync")) {
       // check for the UID table existence
       try {
-        tsdb.getClient().ensureTableExists(
-            tsdb.getConfig().getString(
-                "tsd.storage.hbase.uid_table")).joinUninterruptibly();
+        tsdb.checkNecessaryTablesExist();
         if (!tsdb.getConfig().enable_tree_processing()) {
           LOG.warn("Tree processing is disabled");
           return 0;
@@ -280,9 +273,7 @@ final class UidManager {
         return 2;
       }
       try {
-        tsdb.getClient().ensureTableExists(
-            tsdb.getConfig().getString(
-                "tsd.storage.hbase.uid_table")).joinUninterruptibly();
+        tsdb.checkNecessaryTablesExist();
         final int tree_id = Integer.parseInt(args[1]);
         final boolean delete_definitions;
         if (nargs < 3) {
