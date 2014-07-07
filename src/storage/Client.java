@@ -37,14 +37,15 @@ public interface Client {
     public Deferred<Object> delete(final DeleteRequest request);
 
     /**
-     * Ensures that a given table really exists.
-     * @param table The name of the table you intend to use.
-     * @return A deferred object that indicates the completion of the request.
-     * You probably want to attach at least an errback to this Deferred to
-     * handle failures.
+     * Verifies that the data and UID tables exist in data-source and optionally the
+     * tree and meta data tables if the user has enabled meta tracking or tree
+     * building
+     * @return An ArrayList of objects to wait for
+     * @throws TableNotFoundException
+     * @since 2.0
      */
     @Deprecated
-    public Deferred<Object> ensureTableExists(final String table);
+    public Deferred<ArrayList<Object>> ensureTableExists();
 
     @Deprecated
     public Deferred<Object> flush();
