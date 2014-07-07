@@ -64,8 +64,7 @@ public interface Client {
     @Deprecated
     void setFlushInterval(short aShort);
 
-    @Deprecated
-    public Deferred<Object> shutdown();
+    public Deferred<Object> close();
 
     @Deprecated
     public ClientStats stats();
