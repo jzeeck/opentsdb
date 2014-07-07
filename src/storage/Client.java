@@ -14,7 +14,6 @@ package net.opentsdb.storage;
 
 import com.stumbleupon.async.Deferred;
 import org.hbase.async.*;
-import org.hbase.async.HBaseClient;
 
 
 import java.util.ArrayList;
@@ -25,12 +24,16 @@ import java.util.ArrayList;
  */
 public interface Client {
 
+    @Deprecated
     public Deferred<Long> atomicIncrement(AtomicIncrementRequest air);
 
+    @Deprecated
     public Deferred<Long> bufferAtomicIncrement(final AtomicIncrementRequest request);
 
+    @Deprecated
     public Deferred<Boolean> compareAndSet(final PutRequest edit, final byte[] expected);
 
+    @Deprecated
     public Deferred<Object> delete(final DeleteRequest request);
 
     /**
@@ -40,21 +43,30 @@ public interface Client {
      * You probably want to attach at least an errback to this Deferred to
      * handle failures.
      */
+    @Deprecated
     public Deferred<Object> ensureTableExists(final String table);
 
+    @Deprecated
     public Deferred<Object> flush();
 
+    @Deprecated
     public Deferred<ArrayList<KeyValue>> get(final GetRequest request);
 
+    @Deprecated
     long getFlushInterval();
 
+    @Deprecated
     public Scanner newScanner(final byte[] table);
 
+    @Deprecated
     public Deferred<Object> put(final PutRequest request);
 
+    @Deprecated
     void setFlushInterval(short aShort);
 
+    @Deprecated
     public Deferred<Object> shutdown();
 
+    @Deprecated
     public ClientStats stats();
 }
