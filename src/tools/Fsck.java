@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import net.opentsdb.storage.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hbase.async.Bytes;
@@ -312,7 +313,7 @@ final class Fsck {
             fsckRow(row, datapoints);
           }
         }
-        
+
         // handle the last row
         if (!datapoints.isEmpty()) {
           rows_processed.getAndIncrement();

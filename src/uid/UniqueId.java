@@ -25,12 +25,18 @@ import javax.xml.bind.DatatypeConverter;
 
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
+import net.opentsdb.core.TSDB;
+import net.opentsdb.meta.UIDMeta;
+
+import net.opentsdb.storage.Client;
+import net.opentsdb.storage.HBaseClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.hbase.async.AtomicIncrementRequest;
 import org.hbase.async.Bytes;
 import org.hbase.async.DeleteRequest;
 import org.hbase.async.GetRequest;
-import org.hbase.async.HBaseClient;
 import org.hbase.async.HBaseException;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
@@ -77,8 +83,8 @@ public final class UniqueId implements UniqueIdInterface {
   /** Maximum number of results to return in suggest(). */
   private static final short MAX_SUGGESTIONS = 25;
 
-  /** HBase client to use.  */
-  private final HBaseClient client;
+  /** The data-source client to use.  */
+  private final Client client;
   /** Table where IDs are stored.  */
   private final byte[] table;
   /** The kind of UniqueId, used as the column qualifier. */
@@ -99,9 +105,9 @@ public final class UniqueId implements UniqueIdInterface {
   private final HashMap<String, Deferred<byte[]>> pending_assignments =
     new HashMap<String, Deferred<byte[]>>();
 
-  /** Number of times we avoided reading from HBase thanks to the cache. */
+  /** Number of times we avoided reading from data-source thanks to the cache. */
   private volatile int cache_hits;
-  /** Number of times we had to read from HBase and populate the cache. */
+  /** Number of times we had to read from data-source and populate the cache. */
   private volatile int cache_misses;
 
   /** Whether or not to generate new UIDMetas */
@@ -109,14 +115,14 @@ public final class UniqueId implements UniqueIdInterface {
   
   /**
    * Constructor.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @param kind The kind of Unique ID this instance will deal with.
    * @param width The number of bytes on which Unique IDs should be encoded.
    * @throws IllegalArgumentException if width is negative or too small/large
    * or if kind is an empty string.
    */
-  public UniqueId(final HBaseClient client, final byte[] table, final String kind,
+  public UniqueId(final Client client, final byte[] table, final String kind,
                   final int width) {
     this.client = client;
     this.table = table;
@@ -131,12 +137,12 @@ public final class UniqueId implements UniqueIdInterface {
     this.id_width = (short) width;
   }
 
-  /** The number of times we avoided reading from HBase thanks to the cache. */
+  /** The number of times we avoided reading from data-source thanks to the cache. */
   public int cacheHits() {
     return cache_hits;
   }
 
-  /** The number of times we had to read from HBase and populate the cache. */
+  /** The number of times we had to read from data-source and populate the cache. */
   public int cacheMisses() {
     return cache_misses;
   }
@@ -463,7 +469,7 @@ public final class UniqueId implements UniqueIdInterface {
       // not reason why a KV should already exist for this UID, but just to
       // err on the safe side and catch really weird corruption cases, we do
       // a CAS instead to create the KV.
-      return client.compareAndSet(reverseMapping(), HBaseClient.EMPTY_ARRAY);
+      return client.compareAndSet(reverseMapping(), org.hbase.async.HBaseClient.EMPTY_ARRAY);
     }
 
     private PutRequest reverseMapping() {
@@ -481,7 +487,7 @@ public final class UniqueId implements UniqueIdInterface {
       }
 
       state = DONE;
-      return client.compareAndSet(forwardMapping(), HBaseClient.EMPTY_ARRAY);
+      return client.compareAndSet(forwardMapping(), org.hbase.async.HBaseClient.EMPTY_ARRAY);
     }
 
     private PutRequest forwardMapping() {
@@ -555,7 +561,7 @@ public final class UniqueId implements UniqueIdInterface {
    * @param name The name to lookup in the table or to assign an ID to.
    * @throws HBaseException if there is a problem communicating with HBase.
    * @throws IllegalStateException if all possible IDs are already assigned.
-   * @throws IllegalStateException if the ID found in HBase is encoded on the
+   * @throws IllegalStateException if the ID found in data-source is encoded on the
    * wrong number of bytes.
    */
   public byte[] getOrCreateId(final String name) throws HBaseException {
@@ -616,7 +622,7 @@ public final class UniqueId implements UniqueIdInterface {
    * @param name The name to lookup in the table or to assign an ID to.
    * @throws HBaseException if there is a problem communicating with HBase.
    * @throws IllegalStateException if all possible IDs are already assigned.
-   * @throws IllegalStateException if the ID found in HBase is encoded on the
+   * @throws IllegalStateException if the ID found in data-source is encoded on the
    * wrong number of bytes.
    * @since 1.2
    */
@@ -723,7 +729,7 @@ public final class UniqueId implements UniqueIdInterface {
   }
 
   /**
-   * Helper callback to asynchronously scan HBase for suggestions.
+   * Helper callback to asynchronously scan data-source for suggestions.
    */
   private final class SuggestCB
     implements Callback<Object, ArrayList<ArrayList<KeyValue>>> {
@@ -878,7 +884,7 @@ public final class UniqueId implements UniqueIdInterface {
    * @param kind_or_null The kind of UID to search or null for any kinds.
    * @param max_results The max number of results to return
    */
-  private static Scanner getSuggestScanner(final HBaseClient client,
+  private static Scanner getSuggestScanner(final Client client,
       final byte[] tsd_uid_table, final String search,
       final byte[] kind_or_null, final int max_results) {
     final byte[] start_row;

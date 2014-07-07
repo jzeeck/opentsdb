@@ -22,6 +22,8 @@ import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 import com.stumbleupon.async.DeferredGroupException;
 
+import net.opentsdb.storage.Client;
+import net.opentsdb.storage.HBaseClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hbase.async.Bytes;
@@ -29,7 +31,6 @@ import org.hbase.async.Bytes.ByteMap;
 import org.hbase.async.ClientStats;
 import org.hbase.async.DeleteRequest;
 import org.hbase.async.GetRequest;
-import org.hbase.async.HBaseClient;
 import org.hbase.async.HBaseException;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
@@ -71,8 +72,8 @@ public final class TSDB {
   private static final String TAG_VALUE_QUAL = "tagv";
   private static final short TAG_VALUE_WIDTH = 3;
 
-  /** Client for the HBase cluster to use.  */
-  final HBaseClient client;
+  /** Client for the data-source cluster to use.  */
+  final Client client;
 
   /** Name of the table in which timeseries are stored.  */
   final byte[] table;
@@ -118,8 +119,7 @@ public final class TSDB {
    */
   public TSDB(final HBaseClient client, final Config config) {
     this.config = config;
-    this.client = client;
-
+    this.client = new HBaseClient(config);
     this.client.setFlushInterval(config.getShort("tsd.storage.flush_interval"));
     table = config.getString("tsd.storage.hbase.data_table").getBytes(CHARSET);
     uidtable = config.getString("tsd.storage.hbase.uid_table").getBytes(CHARSET);
@@ -129,6 +129,7 @@ public final class TSDB {
     metrics = new UniqueId(client, uidtable, METRICS_QUAL, METRICS_WIDTH);
     tag_names = new UniqueId(client, uidtable, TAG_NAME_QUAL, TAG_NAME_WIDTH);
     tag_values = new UniqueId(client, uidtable, TAG_VALUE_QUAL, TAG_VALUE_WIDTH);
+
     compactionq = new CompactionQueue(this);
 
     if (config.hasProperty("tsd.core.timezone")) {
@@ -158,8 +159,7 @@ public final class TSDB {
    * @since 2.0
    */
   public TSDB(final Config config) {
-    this(new HBaseClient(config.getString("tsd.storage.hbase.zk_quorum"),
-                         config.getString("tsd.storage.hbase.zk_basedir")),
+    this(new HBaseClient(config),
          config);
   }
   
@@ -260,11 +260,11 @@ public final class TSDB {
   }
   
   /** 
-   * Returns the configured HBase client 
-   * @return The HBase client
+   * Returns the configured data-source client
+   * @return The data-source client
    * @since 2.0 
    */
-  public final HBaseClient getClient() {
+  public final Client getClient() {
     return this.client;
   }
   
@@ -328,7 +328,7 @@ public final class TSDB {
   }
   
   /**
-   * Verifies that the data and UID tables exist in HBase and optionally the
+   * Verifies that the data and UID tables exist in data-source and optionally the
    * tree and meta data tables if the user has enabled meta tracking or tree
    * building
    * @return An ArrayList of objects to wait for
@@ -709,7 +709,7 @@ public final class TSDB {
    * Forces a flush of any un-committed in memory data including left over 
    * compactions.
    * <p>
-   * For instance, any data point not persisted will be sent to HBase.
+   * For instance, any data point not persisted will be sent to the data-source.
    * @return A {@link Deferred} that will be called once all the un-committed
    * data has been successfully and durably stored.  The value of the deferred
    * object return is meaningless and unspecified, and can be {@code null}.
@@ -751,12 +751,12 @@ public final class TSDB {
     final ArrayList<Deferred<Object>> deferreds = 
       new ArrayList<Deferred<Object>>();
     
-    final class HClientShutdown implements Callback<Object, ArrayList<Object>> {
+    final class ClientShutdown implements Callback<Object, ArrayList<Object>> {
       public Object call(final ArrayList<Object> args) {
         return client.shutdown();
       }
       public String toString() {
-        return "shutdown HBase client";
+        return "shutdown data-source client";
       }
     }
     
@@ -776,7 +776,7 @@ public final class TSDB {
         return client.shutdown();
       }
       public String toString() {
-        return "shutdown HBase client after error";
+        return "shutdown data-source client after error";
       }
     }
     
@@ -811,7 +811,7 @@ public final class TSDB {
     
     // wait for plugins to shutdown before we close the client
     return deferreds.size() > 0
-      ? Deferred.group(deferreds).addCallbacks(new HClientShutdown(),
+      ? Deferred.group(deferreds).addCallbacks(new ClientShutdown(),
                                                new ShutdownErrback())
       : client.shutdown();
   }
@@ -1071,7 +1071,7 @@ public final class TSDB {
   /**
    * Schedules the given row key for later re-compaction.
    * Once this row key has become "old enough", we'll read back all the data
-   * points in that row, write them back to HBase in a more compact fashion,
+   * points in that row, write them back to data-source in a more compact fashion,
    * and delete the individual data points.
    * @param row The row key to re-compact later.  Will not be modified.
    * @param base_time The 32-bit unsigned UNIX timestamp.
