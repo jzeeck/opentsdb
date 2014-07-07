@@ -75,7 +75,7 @@ final class Search {
       rc = runCommand(tsdb, use_data_table, args);
     } finally {
       try {
-        tsdb.getClient().shutdown().joinUninterruptibly();
+        tsdb.getClient().close().joinUninterruptibly();
         LOG.info("Gracefully shutdown the TSD");
       } catch (Exception e) {
         LOG.error("Unexpected exception while shutting down", e);

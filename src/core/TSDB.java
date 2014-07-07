@@ -707,7 +707,7 @@ public final class TSDB {
     
     final class ClientShutdown implements Callback<Object, ArrayList<Object>> {
       public Object call(final ArrayList<Object> args) {
-        return client.shutdown();
+        return client.close();
       }
       public String toString() {
         return "shutdown data-source client";
@@ -727,7 +727,7 @@ public final class TSDB {
         } else {
           LOG.error("Failed to shutdown the TSD", e);
         }
-        return client.shutdown();
+        return client.close();
       }
       public String toString() {
         return "shutdown data-source client after error";
@@ -767,7 +767,7 @@ public final class TSDB {
     return deferreds.size() > 0
       ? Deferred.group(deferreds).addCallbacks(new ClientShutdown(),
                                                new ShutdownErrback())
-      : client.shutdown();
+      : client.close();
   }
 
   /**

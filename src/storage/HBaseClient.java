@@ -29,7 +29,6 @@ public final class HBaseClient implements Client{
   private final String META_TABLE_NAME;
 
   public HBaseClient(final Config config) {
-        super();
         this.client = new org.hbase.async.HBaseClient(
                 config.getString("tsd.storage.hbase.zk_quorum"),
                 config.getString("tsd.storage.hbase.zk_basedir"));
@@ -101,7 +100,7 @@ public final class HBaseClient implements Client{
     }
 
     @Override
-    public Deferred<Object> shutdown() {
+    public Deferred<Object> close() {
         return this.client.shutdown();
     }
 
