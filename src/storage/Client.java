@@ -69,4 +69,7 @@ public interface Client {
 
     @Deprecated
     public ClientStats stats();
+
+    void atomicIncrement(byte[] table, byte[] maxidRow, byte[] idFamily, byte[] bytes, long diff);
+
 }
