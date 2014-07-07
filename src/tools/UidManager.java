@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import net.opentsdb.storage.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,6 @@ import org.hbase.async.AtomicIncrementRequest;
 import org.hbase.async.Bytes;
 import org.hbase.async.DeleteRequest;
 import org.hbase.async.GetRequest;
-import org.hbase.async.HBaseClient;
 import org.hbase.async.HBaseException;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
@@ -319,13 +319,13 @@ final class UidManager {
 
   /**
    * Implements the {@code grep} subcommand.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @param ignorecase Whether or not to ignore the case while grepping.
    * @param args Command line arguments ({@code [kind] RE}).
    * @return The exit status of the command (0 means at least 1 match).
    */
-  private static int grep(final HBaseClient client,
+  private static int grep(final Client client,
                           final byte[] table,
                           final boolean ignorecase,
                           final String[] args) {
@@ -393,13 +393,13 @@ final class UidManager {
 
   /**
    * Implements the {@code assign} subcommand.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @param idwidth Number of bytes on which the UIDs should be.
    * @param args Command line arguments ({@code assign name [names]}).
    * @return The exit status of the command (0 means success).
    */
-  private static int assign(final HBaseClient client,
+  private static int assign(final Client client,
                             final byte[] table,
                             final short idwidth,
                             final String[] args) {
@@ -419,13 +419,13 @@ final class UidManager {
 
   /**
    * Implements the {@code rename} subcommand.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @param idwidth Number of bytes on which the UIDs should be.
    * @param args Command line arguments ({@code assign name [names]}).
    * @return The exit status of the command (0 means success).
    */
-  private static int rename(final HBaseClient client,
+  private static int rename(final Client client,
                             final byte[] table,
                             final short idwidth,
                             final String[] args) {
@@ -449,11 +449,11 @@ final class UidManager {
 
   /**
    * Implements the {@code fsck} subcommand.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @return The exit status of the command (0 means success).
    */
-  private static int fsck(final HBaseClient client, final byte[] table, 
+  private static int fsck(final Client client, final byte[] table,
       final boolean fix, final boolean fix_unknowns) {
 
     if (fix) {
@@ -840,14 +840,14 @@ final class UidManager {
 
   /**
    * Looks up an ID and finds the corresponding name(s), if any.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @param idwidth Number of bytes on which the UIDs should be.
    * @param lid The ID to look for.
    * @param kind The 'kind' of the ID (can be {@code null}).
    * @return The exit status of the command (0 means at least 1 found).
    */
-  private static int lookupId(final HBaseClient client,
+  private static int lookupId(final Client client,
                               final byte[] table,
                               final short idwidth,
                               final long lid,
@@ -862,14 +862,14 @@ final class UidManager {
   }
 
   /**
-   * Gets a given row in HBase and prints it on standard output.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
-   * @param key The row key to attempt to get from HBase.
+   * Gets a given row in data-source and prints it on standard output.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
+   * @param key The row key to attempt to get from data-source.
    * @param family The family in which we're interested.
    * @return 0 if at least one cell was found and printed, 1 otherwise.
    */
-  private static int findAndPrintRow(final HBaseClient client,
+  private static int findAndPrintRow(final Client client,
                                      final byte[] table,
                                      final byte[] key,
                                      final byte[] family,
@@ -891,14 +891,14 @@ final class UidManager {
 
   /**
    * Looks up an ID for a given kind, and prints it if found.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the data-source table to use.
    * @param idwidth Number of bytes on which the UIDs should be.
    * @param kind The 'kind' of the ID (must not be {@code null}).
    * @param id The ID to look for.
    * @return 0 if the ID for this kind was found, 1 otherwise.
    */
-  private static int extactLookupId(final HBaseClient client,
+  private static int extactLookupId(final Client client,
                                     final byte[] table,
                                     final short idwidth,
                                     final String kind,
@@ -938,14 +938,14 @@ final class UidManager {
 
   /**
    * Looks up a name and finds the corresponding UID(s), if any.
-   * @param client The HBase client to use.
-   * @param table The name of the HBase table to use.
+   * @param client The data-source client to use.
+   * @param table The name of the table to use.
    * @param idwidth Number of bytes on which the UIDs should be.
    * @param name The name to look for.
    * @param kind The 'kind' of the ID (can be {@code null}).
    * @return The exit status of the command (0 means at least 1 found).
    */
-  private static int lookupName(final HBaseClient client,
+  private static int lookupName(final Client client,
                                 final byte[] table,
                                 final short idwidth,
                                 final String name,
@@ -958,13 +958,13 @@ final class UidManager {
 
   /**
    * Looks up a name for a given kind, and prints it if found.
-   * @param client The HBase client to use.
+   * @param client The data-source client to use.
    * @param idwidth Number of bytes on which the UIDs should be.
    * @param kind The 'kind' of the ID (must not be {@code null}).
    * @param name The name to look for.
    * @return 0 if the name for this kind was found, 1 otherwise.
    */
-  private static int extactLookupName(final HBaseClient client,
+  private static int extactLookupName(final Client client,
                                       final byte[] table,
                                       final short idwidth,
                                       final String kind,

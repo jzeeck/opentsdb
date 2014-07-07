@@ -23,6 +23,7 @@ import java.util.zip.GZIPInputStream;
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 
+import net.opentsdb.storage.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,7 +96,7 @@ final class TextImporter {
 
   static volatile boolean throttle = false;
 
-  private static int importFile(final HBaseClient client,
+  private static int importFile(final Client client,
                                 final TSDB tsdb,
                                 final String path) throws IOException {
     final long start_time = System.nanoTime();

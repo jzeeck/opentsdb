@@ -20,11 +20,11 @@ import java.util.TreeMap;
 import com.stumbleupon.async.Callback;
 import com.stumbleupon.async.Deferred;
 
+import net.opentsdb.storage.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hbase.async.Bytes;
 import org.hbase.async.DeleteRequest;
-import org.hbase.async.HBaseClient;
 import org.hbase.async.KeyValue;
 import org.hbase.async.PutRequest;
 import org.hbase.async.Scanner;
@@ -88,7 +88,7 @@ final class Fsck {
   }
 
   private static int fsck(final TSDB tsdb,
-                           final HBaseClient client,
+                           final Client client,
                            final byte[] table,
                            final boolean fix,
                            final String[] args) throws Exception {
