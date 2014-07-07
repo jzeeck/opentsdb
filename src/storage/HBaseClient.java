@@ -18,6 +18,7 @@ import java.util.ArrayList;
 public final class HBaseClient implements Client{
     final org.hbase.async.HBaseClient client;
 
+
   private final boolean ENABLE_REALTIME_TS;
   private final boolean ENABLE_REALTIME_UID;
   private final boolean ENABLE_TSUID_INCREMENTING;
@@ -28,8 +29,8 @@ public final class HBaseClient implements Client{
   private final String TREE_TABLE_NAME;
   private final String META_TABLE_NAME;
 
-  public HBaseClient(final Config config) {
-        super();
+
+    public HBaseClient(final Config config) {
         this.client = new org.hbase.async.HBaseClient(
                 config.getString("tsd.storage.hbase.zk_quorum"),
                 config.getString("tsd.storage.hbase.zk_basedir"));
@@ -101,7 +102,7 @@ public final class HBaseClient implements Client{
     }
 
     @Override
-    public Deferred<Object> shutdown() {
+    public Deferred<Object> close() {
         return this.client.shutdown();
     }
 

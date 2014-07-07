@@ -124,7 +124,7 @@ final class UidManager {
       rc = runCommand(tsdb, table, idwidth, ignorecase, args);
     } finally {
       try {
-        tsdb.getClient().shutdown().joinUninterruptibly();
+        tsdb.getClient().close().joinUninterruptibly();
         LOG.info("Gracefully shutdown the TSD");
       } catch (Exception e) {
         LOG.error("Unexpected exception while shutting down", e);
