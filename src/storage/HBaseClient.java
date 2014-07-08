@@ -18,15 +18,15 @@ import java.util.ArrayList;
 public final class HBaseClient implements Client {
   private final org.hbase.async.HBaseClient client;
 
-  private final boolean ENABLE_REALTIME_TS;
-  private final boolean ENABLE_REALTIME_UID;
-  private final boolean ENABLE_TSUID_INCREMENTING;
-  private final boolean ENABLE_TREE_PROCESSING;
+  private final boolean enable_realtime_ts;
+  private final boolean enable_realtime_uid;
+  private final boolean enable_tsuid_incrementing;
+  private final boolean enable_tree_processing;
 
-  private final String DATA_TABLE_NAME;
-  private final String UID_TABLE_NAME;
-  private final String TREE_TABLE_NAME;
-  private final String META_TABLE_NAME;
+  private final String data_table_name;
+  private final String uid_table_name;
+  private final String tree_table_name;
+  private final String meta_table_name;
 
 
   public HBaseClient(final Config config) {
@@ -34,16 +34,16 @@ public final class HBaseClient implements Client {
         config.getString("tsd.storage.hbase.zk_quorum"),
         config.getString("tsd.storage.hbase.zk_basedir"));
 
-    ENABLE_TREE_PROCESSING = config.enable_tree_processing();
+    enable_tree_processing = config.enable_tree_processing();
 
-    ENABLE_REALTIME_TS = config.enable_realtime_ts();
-    ENABLE_REALTIME_UID = config.enable_realtime_uid();
-    ENABLE_TSUID_INCREMENTING = config.enable_tsuid_incrementing();
+    enable_realtime_ts = config.enable_realtime_ts();
+    enable_realtime_uid = config.enable_realtime_uid();
+    enable_tsuid_incrementing = config.enable_tsuid_incrementing();
 
-    DATA_TABLE_NAME = config.getString("tsd.storage.hbase.data_table");
-    UID_TABLE_NAME = config.getString("tsd.storage.hbase.uid_table");
-    TREE_TABLE_NAME = config.getString("tsd.storage.hbase.tree_table");
-    META_TABLE_NAME = config.getString("tsd.storage.hbase.meta_table");
+    data_table_name = config.getString("tsd.storage.hbase.data_table");
+    uid_table_name = config.getString("tsd.storage.hbase.uid_table");
+    tree_table_name = config.getString("tsd.storage.hbase.tree_table");
+    meta_table_name = config.getString("tsd.storage.hbase.meta_table");
   }
 
   @Override
@@ -66,15 +66,15 @@ public final class HBaseClient implements Client {
     final ArrayList<Deferred<Object>> checks =
         new ArrayList<Deferred<Object>>(2);
 
-    checks.add(client.ensureTableExists(DATA_TABLE_NAME));
-    checks.add(client.ensureTableExists(UID_TABLE_NAME));
+    checks.add(client.ensureTableExists(data_table_name));
+    checks.add(client.ensureTableExists(uid_table_name));
 
-    if (ENABLE_TREE_PROCESSING) {
-      checks.add(client.ensureTableExists(TREE_TABLE_NAME));
+    if (enable_tree_processing) {
+      checks.add(client.ensureTableExists(tree_table_name));
     }
-    if (ENABLE_REALTIME_TS || ENABLE_REALTIME_UID ||
-        ENABLE_TSUID_INCREMENTING) {
-      checks.add(client.ensureTableExists(META_TABLE_NAME));
+    if (enable_realtime_ts || enable_realtime_uid ||
+        enable_tsuid_incrementing) {
+      checks.add(client.ensureTableExists(meta_table_name));
     }
 
     return Deferred.group(checks);
