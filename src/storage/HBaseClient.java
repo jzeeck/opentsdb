@@ -10,12 +10,16 @@ import org.hbase.async.KeyValue;
 import org.hbase.async.Scanner;
 import org.hbase.async.ClientStats;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 /**
  * The HBaseClient that implements the client interface required by TSDB.
  */
 public final class HBaseClient implements Client {
+  /** Charset used to convert Strings to byte arrays and back. */
+  private static final Charset CHARSET = Charset.forName("ISO-8859-1");
+
   private final org.hbase.async.HBaseClient client;
 
   private final boolean enable_realtime_ts;
@@ -23,10 +27,10 @@ public final class HBaseClient implements Client {
   private final boolean enable_tsuid_incrementing;
   private final boolean enable_tree_processing;
 
-  private final String data_table_name;
-  private final String uid_table_name;
-  private final String tree_table_name;
-  private final String meta_table_name;
+  private final byte[] data_table_name;
+  private final byte[] uid_table_name;
+  private final byte[] tree_table_name;
+  private final byte[] meta_table_name;
 
 
   public HBaseClient(final Config config) {
@@ -40,10 +44,10 @@ public final class HBaseClient implements Client {
     enable_realtime_uid = config.enable_realtime_uid();
     enable_tsuid_incrementing = config.enable_tsuid_incrementing();
 
-    data_table_name = config.getString("tsd.storage.hbase.data_table");
-    uid_table_name = config.getString("tsd.storage.hbase.uid_table");
-    tree_table_name = config.getString("tsd.storage.hbase.tree_table");
-    meta_table_name = config.getString("tsd.storage.hbase.meta_table");
+    data_table_name = config.getString("tsd.storage.hbase.data_table").getBytes(CHARSET);
+    uid_table_name = config.getString("tsd.storage.hbase.uid_table").getBytes(CHARSET);
+    tree_table_name = config.getString("tsd.storage.hbase.tree_table").getBytes(CHARSET);
+    meta_table_name = config.getString("tsd.storage.hbase.meta_table").getBytes(CHARSET);
   }
 
   @Override
