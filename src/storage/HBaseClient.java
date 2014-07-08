@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * The HBaseClient that implements the client interface required by TSDB.
  */
 public final class HBaseClient implements Client {
-  final org.hbase.async.HBaseClient client;
+  private final org.hbase.async.HBaseClient client;
 
   private final boolean ENABLE_REALTIME_TS;
   private final boolean ENABLE_REALTIME_UID;
