@@ -1,5 +1,6 @@
 package net.opentsdb.storage;
 
+import com.google.common.base.Charsets;
 import com.stumbleupon.async.Deferred;
 import net.opentsdb.utils.Config;
 import org.hbase.async.AtomicIncrementRequest;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
  */
 public final class HBaseClient implements Client {
   /** Charset used to convert Strings to byte arrays and back. */
-  private static final Charset CHARSET = Charset.forName("ISO-8859-1");
+  private static final Charset CHARSET = Charsets.ISO_8859_1;
 
   private final org.hbase.async.HBaseClient client;
 
